@@ -412,15 +412,15 @@ def get_questions():
     
     return jsonify({'questions': questions})
 
+# 앱 초기화 시 자동 로드 (gunicorn 환경에서도 동작)
+_auto_load_document()
+
 if __name__ == '__main__':
-    port = int(os.getenv('FLASK_PORT', 5000))
+    port = int(os.getenv('PORT', 5000))
     print(f"\n🚀 Flask 서버 시작")
-    print(f"📍 http://localhost:{port}")
-    print(f"🔧 모드: {os.getenv('FLASK_ENV', 'production')}")
-    print(f"📝 임베딩: OpenAI (Sentence-BERT 제거됨)")
-    
-    # 서버 시작 시 문서 자동 로드
-    _auto_load_document()
+    print(f"📍 http://localhost:{port}" )
+    print(f"🔧 모드: {os.getenv('FLASK_ENV', 'production')}"
+    print(f"📝 임베딩: OpenAI")
     
     print()
     
