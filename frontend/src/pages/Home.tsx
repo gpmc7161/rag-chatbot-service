@@ -2,13 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import './Home.css';
 
+interface Source {
+  reference: string;
+  text: string;
+}
+
 interface Message {
   id: string;
   question: string;
   basicAnswer: string;
   ragAnswer: string;
-  sources: any[];
-  responseTime: number; // 응답시간 (ms)
+  sources: Source[];
+  responseTime: number;
   timestamp: Date;
 }
 
@@ -25,12 +30,10 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 새 메시지 시 스크롤
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 페이지 로드 시 자동 문서 로드 여부 확인
   useEffect(() => {
     const checkDocumentLoaded = async () => {
       try {
@@ -38,10 +41,10 @@ export default function Home() {
         if (response.data.document_loaded) {
           setDocumentUploaded(true);
           setUploadedDocumentCount(1);
-          console.log('✅ 문서 자동 로드 됨');
+          console.log('문서 자동 로드 됨');
         }
       } catch (error) {
-        console.log('⚠️  문서 로드 여부 확인 실패');
+        console.log('문서 로드 여부 확인 실패');
       }
     };
     
@@ -100,14 +103,26 @@ export default function Home() {
 
       const result = response.data;
       
-      // 참고문서 형식 변환
-      let sources = [];
+      // 참고문서 형식 변환 (모든 형식 처리)
+      let sources: Source[] = [];
       if (result.rag_chatbot && result.rag_chatbot.references) {
         if (Array.isArray(result.rag_chatbot.references)) {
-          sources = result.rag_chatbot.references.map((ref: any) => ({
-            reference: typeof ref === 'string' ? ref : ref.reference || 'Unknown',
-            text: typeof ref === 'string' ? ref : ref.text || ref
-          }));
+          sources = result.rag_chatbot.references.map((ref: any, idx: number): Source => {
+            // Case 1: 문자열인 경우
+            if (typeof ref === 'string') {
+              return { reference: '참고 ' + (idx + 1), text: ref };
+            }
+            // Case 2: 객체인 경우 {chunk_id, preview, similarity}
+            if (typeof ref === 'object' && ref !== null) {
+              const textValue = ref.preview || ref.text || ref.content || '';
+              return {
+                reference: '참고 ' + (idx + 1),
+                text: typeof textValue === 'string' ? textValue : JSON.stringify(textValue)
+              };
+            }
+            // Case 3: 기타
+            return { reference: '참고 ' + (idx + 1), text: String(ref) };
+          });
         }
       }
 
@@ -279,10 +294,10 @@ export default function Home() {
                             <div className="response-time">
                               ⏱️ 응답시간: {msg.responseTime}ms
                             </div>
-                            {msg.sources.length > 0 && (
+                            {msg.sources && msg.sources.length > 0 && (
                               <div className="sources">
                                 <strong>📖 참고문서:</strong>
-                                {msg.sources.map((source, idx) => (
+                                {msg.sources.map((source: Source, idx: number) => (
                                   <div key={idx} className="source-item">
                                     <span className="reference">{source.reference}</span>
                                     <p>{source.text}</p>
