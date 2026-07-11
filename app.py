@@ -5,6 +5,7 @@
 """
 
 from flask import Flask, request, jsonify
+from flask import send_from_directory
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
@@ -17,7 +18,9 @@ import re
 
 load_dotenv()
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+
 CORS(app)
 
 # 전역 RAG 시스템 인스턴스
@@ -411,6 +414,15 @@ def get_questions():
     ]
     
     return jsonify({'questions': questions})
+
+# React 앱 서빙 (반드시 /api 라우트들 아래에 추가)
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
 
 # 앱 초기화 시 자동 로드 (gunicorn 환경에서도 동작)
 _auto_load_document()

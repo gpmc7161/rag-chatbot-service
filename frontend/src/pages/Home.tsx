@@ -17,7 +17,10 @@ interface Message {
   timestamp: Date;
 }
 
-const API_URL = 'http://localhost:5000/api';
+//const API_URL = 'http://localhost:5000/api';
+
+// 수정 (같은 서버에서 서빙되므로 상대경로 사용 )
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
