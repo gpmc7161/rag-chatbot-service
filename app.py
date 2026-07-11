@@ -419,7 +419,7 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     print(f"\n🚀 Flask 서버 시작")
     print(f"📍 http://localhost:{port}" )
-    print(f"🔧 모드: {os.getenv('FLASK_ENV', 'production')}"
+    print(f"🔧 모드: {os.getenv('FLASK_ENV', 'production')}")
     print(f"📝 임베딩: OpenAI")
     
     print()
